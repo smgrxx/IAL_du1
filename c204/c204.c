@@ -53,9 +53,20 @@ bool solved;
  * @param postfixExpression Znakový řetězec obsahující výsledný postfixový výraz
  * @param postfixExpressionLength Ukazatel na aktuální délku výsledného postfixového výrazu
  */
-void untilLeftPar( Stack *stack, char *postfixExpression, unsigned *postfixExpressionLength ) {
-	solved = false; /* V případě řešení, smažte tento řádek! */
+void untilLeftPar(Stack *stack, char *postfixExpression, unsigned *postfixExpressionLength) {
+    while (Stack_IsEmpty(stack) == false) {
+        char topOperator;
+        Stack_Top(stack, &topOperator); // Get the top operator from the stack      
+        if (topOperator != '(') { 
+                  postfixExpression[(*postfixExpressionLength)++] = topOperator; // Add the operator to the postfix expression
+		} else {
+			Stack_Pop(stack); // Remove the left parenthesis from the stack
+            return;
+        }
+        Stack_Pop(stack); // Remove the operator from the stack
+    }
 }
+
 
 /**
  * Pomocná funkce doOperation.
@@ -74,7 +85,26 @@ void untilLeftPar( Stack *stack, char *postfixExpression, unsigned *postfixExpre
  * @param postfixExpressionLength Ukazatel na aktuální délku výsledného postfixového výrazu
  */
 void doOperation( Stack *stack, char c, char *postfixExpression, unsigned *postfixExpressionLength ) {
-	solved = false; /* V případě řešení, smažte tento řádek! */
+	char top = 0;
+	if (Stack_IsEmpty(stack)){ 
+		Stack_Push(stack, c); // Push the operator to the stack
+		return;
+	}
+	Stack_Top(stack, &top); // Get the top operator from the stack
+	if (top == '(') {
+		Stack_Push(stack, c); // Push the operator to the stack
+		return;
+	}
+	if (top == '+' || top == '-') { // If the top operator is + or -
+		if (c == '*' || c == '/') { // If the current operator is * or /
+			Stack_Push(stack, c); // Push the current operator to the stack
+			return;
+		}
+	}
+	postfixExpression(*postfixExpressionLength) = top; // Add the top operator to the postfix expression
+	(*postfixExpressionLength) += 1; // Increment the postfix expression length
+	Stack_Pop(stack); // Remove the top operator from the stack
+	doOperation(stack, c, postfixExpression, postfixExpressionLength); // Call the function again (recursion)
 }
 
 /**
